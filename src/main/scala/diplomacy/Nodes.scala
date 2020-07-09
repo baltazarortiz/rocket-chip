@@ -488,6 +488,7 @@ abstract class BaseNode(implicit val valName: ValName)
   protected[diplomacy] val sourceCard: Int
 
   /** The "flex" cardinality.
+    * 
     * How many times is this node used in a way that could be either source or sink, depending on final
     * directional determination.
     */
