@@ -84,8 +84,8 @@ class RocketTile private(
   // PEX gets ID 0, AP gets ID 1. The AP is not allowed to access the PEX
   // kernel memory space or tag memory space
   if (hartId == 1) {
-    val tagMemorySet = AddressSet(BigInt(0x90000000L), 0xfffffffL)
-    val pexAddrSpace = AddressSet(BigInt(0x40000000L), 0xfffffffL)
+    val tagMemorySet = AddressSet(BigInt(0x80000000L), 0xfffffffL)
+    val pexAddrSpace = AddressSet(BigInt(0x60000000L), 0xfffffffL)
     masterNode :=* TLFilter(TLFilter.mSubtract(tagMemorySet)) :=* TLFilter(TLFilter.mSubtract(pexAddrSpace)) :=* tlOtherMastersNode
   }
   else {

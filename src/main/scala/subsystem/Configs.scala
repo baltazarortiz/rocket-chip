@@ -384,6 +384,22 @@ class WithDefaultMemPort extends Config((site, here, up) => {
                       idBits = 4), 1))
 })
 
+class WithPIPEMemPort extends Config((site, here, up) => {
+  case ExtMem => Some(MemoryPortParams(MasterPortParams(
+                      base = x"8000_0000",
+                      size = x"8000_0000",
+                      beatBytes = site(MemoryBusKey).beatBytes,
+                      idBits = 4), 1))
+})
+
+class WithTraceMemPort extends Config((site, here, up) => {
+  case ExtMem => Some(MemoryPortParams(MasterPortParams(
+                      base = x"7000_0000",
+                      size = x"1000_0000",
+                      beatBytes = site(MemoryBusKey).beatBytes,
+                      idBits = 4), 1))
+})
+
 class WithNoMemPort extends Config((site, here, up) => {
   case ExtMem => None
 })
