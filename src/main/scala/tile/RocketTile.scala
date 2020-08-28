@@ -4,6 +4,7 @@
 package freechips.rocketchip.tile
 
 import Chisel._
+import chisel3.util.experimental.BoringUtils
 import freechips.rocketchip.config._
 import freechips.rocketchip.devices.tilelink._
 import freechips.rocketchip.diplomacy._
@@ -144,6 +145,19 @@ class RocketTileModuleImp(outer: RocketTile) extends BaseTileModuleImp(outer)
 
   val core = Module(new Rocket(outer)(outer.p))
 
+  if (outer.hartId == 1) {
+    // Expose cease to the PIPE
+    BoringUtils.addSource(core.io.cease, "apDone")
+
+    //  Send the PIPE stall signal to the AP (overrides traceAuxSinkNode stall signal)
+    val pipeTraceStall = Wire(Bool())
+    BoringUtils.addSink(pipeTraceStall, "pipeStall")
+    core.io.traceStall := pipeTraceStall
+  }
+  else {
+    core.io.traceStall := outer.traceAuxSinkNode.bundle.stall
+  }
+
   // Report unrecoverable error conditions; for now the only cause is cache ECC errors
   outer.reportHalt(List(outer.dcache.module.io.errors))
 
@@ -166,7 +180,10 @@ class RocketTileModuleImp(outer: RocketTile) extends BaseTileModuleImp(outer)
 
   // Pass through various external constants and reports
   outer.traceSourceNode.bundle <> core.io.trace
-  core.io.traceStall := outer.traceAuxSinkNode.bundle.stall
+
+  // Set above for non-AP cores
+  //core.io.traceStall := outer.traceAuxSinkNode.bundle.stall
+
   outer.bpwatchSourceNode.bundle <> core.io.bpwatch
   outer.frontend.module.io.reset_vector := constants.reset_vector
 

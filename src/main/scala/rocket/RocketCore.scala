@@ -7,6 +7,7 @@ import Chisel._
 import Chisel.ImplicitConversions._
 import chisel3.withClock
 import chisel3.experimental.{chiselName, NoChiselNamePrefix}
+import chisel3.util.experimental.BoringUtils
 import freechips.rocketchip.config.Parameters
 import freechips.rocketchip.tile._
 import freechips.rocketchip.util._
@@ -890,6 +891,12 @@ class Rocket(tile: RocketTile)(implicit p: Parameters) extends CoreModule()(p)
   coreMonitorBundle.priv_mode := csr.io.trace(0).priv
   coreMonitorBundle.daddr := Reg(next=Reg(next=io.dmem.req.bits.addr))
 
+  // hartID 1 = AP
+  if (io.hartid == 1) {
+    // Expose AP trace to the PIPE
+    BoringUtils.addSource(coreMonitorBundle, "apMonitorBundle")
+  }
+
   if (enableCommitLog) {
     val t = csr.io.trace(0)
     val rd = wb_waddr
@@ -899,6 +906,8 @@ class Rocket(tile: RocketTile)(implicit p: Parameters) extends CoreModule()(p)
 
     when (t.valid && !t.exception) {
       when (wfd) {
+
+        // Expose cease to the PIPE
         printf ("%d 0x%x (0x%x) f%d p%d 0xXXXXXXXXXXXXXXXX\n", t.priv, t.iaddr, t.insn, rd, rd+UInt(32))
       }
       .elsewhen (wxd && rd =/= UInt(0) && has_data) {
